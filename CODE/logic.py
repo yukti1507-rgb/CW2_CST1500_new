@@ -29,11 +29,6 @@ class Scheduler:
     def add_process(self, process):
         self.processes.append(process)
     
-    def calculating_turnaround_time(self):
-        for process in self.processes:
-            process.turnaround_time = (process.waiting_time + process.burst_time)
-
-    
     def calculate_average_waiting_time(self):
         total_waiting_time = sum(process.waiting_time for process in self.processes)
         return total_waiting_time / len(self.processes) if self.processes else 0
@@ -175,10 +170,10 @@ class FCFS_Scheduler(Scheduler):
 
             process.start_time = current_time
             process.waiting_time = process.start_time - process.arrival_time
+            process.turnaround_time = (process.waiting_time + process.burst_time)
             current_time += process.burst_time
             process.finish_time = current_time
 
-            self.calculating_turnaround_time()
 
             self.timeline.append({
             "Process": process.process_number,
@@ -192,91 +187,126 @@ class FCFS_Scheduler(Scheduler):
 
 
 
-class SJFScheduler(Scheduler):
+class SJF_Scheduler(Scheduler):
     def __init__(self):
         super().__init__()
    
     def run(self):
         ready_queue = self.processes.copy()
+        self.current_time = 0
 
         while ready_queue:
+            # Find all processes that have arrived
             available = [p for p in ready_queue if p.arrival_time <= self.current_time]
 
+            # If none have arrived yet, jump to next arrival
             if not available:
-                self.current_time = min(p.arrival_time for p in ready_queue)
+                next_arrival = min(p.arrival_time for p in ready_queue)
+
+                # CPU idle until next arrival
+                self.timeline.append({
+                    "Process": "Idle",
+                    "Start": self.current_time,
+                    "Finish": next_arrival
+                })
+
+                self.current_time = next_arrival
                 available = [p for p in ready_queue if p.arrival_time <= self.current_time]
 
-            # Sort by burst time, then arrival time
-            available.sort(key=lambda p: (p.burst_time, p.arrival_time))
+            # Pick shortest burst among available
+            available.sort(key=lambda p: p.burst_time)
             process = available[0]
             ready_queue.remove(process)
 
-            start_time = self.current_time
-            # Calculate waiting_time, turnaround_time
-            process.waiting_time = self.current_time - process.arrival_time
-            self.calculating_turnaround_time()
-            self.current_time += process.burst_time
-            process.completion_time = self.current_time
+            # Start time
+            process.start_time = self.current_time
 
+            # Waiting time
+            process.waiting_time = process.start_time - process.arrival_time
+
+            # Run the process
+            self.current_time += process.burst_time
+
+            # Finish time
+            process.finish_time = self.current_time
+
+            # Turnaround time
+            process.turnaround_time = process.finish_time - process.arrival_time
+
+            # Add to timeline
             self.timeline.append({
-            "Process": process.process_number,
-            "Start": process.start_time,
-            "Finish": process.finish_time
+                "Process": process.process_number,
+                "Start": process.start_time,
+                "Finish": process.finish_time
             })
 
-            self.display_results("SJF")
+        self.display_results()
+
 
          
 
 # ROUND ROBIN
 
-class RoundRobinScheduler(Scheduler):
+class RR_Scheduler(Scheduler):
     def __init__(self, time_quantum):
         super().__init__()
         self.time_quantum = time_quantum
 
     def run(self):
-        ready_queue = []
         processes = sorted(self.processes, key=lambda p: p.arrival_time)
+        ready_queue = []
+        self.current_time = 0
 
         while processes or ready_queue:
+
             # Add newly arrived processes
             while processes and processes[0].arrival_time <= self.current_time:
                 ready_queue.append(processes.pop(0))
 
-            if ready_queue:
-                process = ready_queue.pop(0)
-                start_time = self.current_time
+            # CPU idle if no process is ready
+            if not ready_queue:
+                next_arrival = processes[0].arrival_time
 
-                # Run for quantum or remaining burst
-                run_time = min(self.time_quantum, process.remaining_time)
-                process.remaining_time -= run_time
-                self.current_time += run_time
-
-                # Timeline update
+                # Add idle block
                 self.timeline.append({
-                    "Process": f"P{process.pid}",
-                    "Start": start_time,
-                    "Finish": self.current_time
+                    "Process": "Idle",
+                    "Start": self.current_time,
+                    "Finish": next_arrival
                 })
 
-                if process.remaining_time > 0:
-                    # Not finished, requeue
-                    while processes and processes[0].arrival_time <= self.current_time:
-                        ready_queue.append(processes.pop(0))
-                    ready_queue.append(process)
-                else:
-                    # Finished
-                    process.completion_time = self.current_time
-                    process.turnaround_time = process.completion_time - process.arrival_time
-                    process.waiting_time = process.turnaround_time - process.burst_time
-                    self.results.append(process)
+                self.current_time = next_arrival
+                continue
 
-                self.display_results("RR")
+            # Pop next process from queue
+            process = ready_queue.pop(0)
+            start_time = self.current_time
 
+            # Run for quantum or remaining burst
+            run_time = min(self.time_quantum, process.remaining_time)
+            process.remaining_time -= run_time
+            self.current_time += run_time
+
+            # Add execution block
+            self.timeline.append({
+                "Process": process.process_number,
+                "Start": start_time,
+                "Finish": self.current_time
+            })
+
+            # Add newly arrived processes during execution
+            while processes and processes[0].arrival_time <= self.current_time:
+                ready_queue.append(processes.pop(0))
+
+            # Requeue if not finished
+            if process.remaining_time > 0:
+                ready_queue.append(process)
             else:
-                # CPU idle until next arrival
-                self.current_time = processes[0].arrival_time
+                process.finish_time = self.current_time
+                process.turnaround_time = process.finish_time - process.arrival_time
+                process.waiting_time = process.turnaround_time - process.burst_time
+
+        self.display_results()
+
 
     
 class RandomGenerator:
