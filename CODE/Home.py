@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from logic.FCFS_logic import RandomGenerator
+from logic import RandomGenerator
 
 
 st.set_page_config(page_title="CPU Scheduling Algorithms", page_icon=":home", layout= "wide")
@@ -42,7 +42,10 @@ if input == "Input values manually":
         col2.badge(f"Enter burst time for process {i+1}",color="blue")
         burst_time= col2.number_input(f"", min_value=1, step=1, key=f"burst_{i}")
         
-        processes.append((i+1, burst_time, arrival_time))
+        processes.append({
+            "Process Number" : i+1,
+            "Arrival Time" : arrival_time,
+            "Burst Time" : burst_time})
     
     choose_algorithm()
 
@@ -51,6 +54,7 @@ if input == "Generate random values":
         processes = RandomGenerator.generate_random_processes(num_processes)
         df = pd.DataFrame(processes)
         st.dataframe(df)
+        
         choose_algorithm()
 
 
