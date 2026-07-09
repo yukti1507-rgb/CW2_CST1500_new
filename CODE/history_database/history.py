@@ -84,5 +84,42 @@ def save_results_option(scheduler, algorithm):
         st.info("The results will only be displayed during the current run.")
 
 
+def get_specific_identifier(identifier):
+    conn = get_connection()
+    df = pd.read_sql_query(
+        "SELECT * FROM history WHERE identifier = ? ORDER BY timestamp DESC",
+        conn,
+        params=(identifier,)
+    )
+    conn.close()
+    return df
 
+def get_specific_algorithm(identifier, algorithm):
+    conn = get_connection()
+    df = pd.read_sql_query(
+        "SELECT * FROM history WHERE identifier = ? AND algorithm = ? ORDER BY timestamp DESC",
+        conn,
+        params=(identifier, algorithm)
+    )
+    conn.close()
+    return df
 
+def get_specific_timestamp(identifier, timestamp):
+    conn = get_connection()
+    df = pd.read_sql_query(
+        "SELECT * FROM history WHERE identifier = ? AND timestamp = ?",
+        conn,
+        params=(identifier, timestamp)
+    )
+    conn.close()
+    return df
+
+def delete_run(identifier, timestamp):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "DELETE FROM history WHERE identifier = ? AND timestamp = ?",
+        (identifier, timestamp)
+    )
+    conn.commit()
+    conn.close()

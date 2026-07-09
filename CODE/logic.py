@@ -25,6 +25,8 @@ class Scheduler:
         self.results = []
         self.timeline =[] 
         self.table_placeholder = st.empty()
+        self.silent = False
+    
     
     def add_process(self, process):
         self.processes.append(process)
@@ -37,6 +39,12 @@ class Scheduler:
         total_turnaround_time = sum(process.turnaround_time for process in self.processes)
         return total_turnaround_time / len(self.processes) if self.processes else 0
     
+    def get_summary(self):
+        return {
+            "Average Waiting Time": self.calculate_average_waiting_time(),
+            "Average Turnaround Time": self.calculate_average_turnaround_time()
+        }
+
     def progress_of_process(self, process):
         progress_bar = st.progress(0)
         status_text = st.empty()
@@ -125,12 +133,14 @@ class Scheduler:
 
         st.plotly_chart(
             fig,
-            use_container_width=True,
-            key="fcfs_gantt"
+            use_container_width=True
         )
 
 
     def display_results(self):
+        if self.silent:
+            return
+        
         for process in self.processes:
             self.progress_of_process(process)
             
@@ -184,6 +194,7 @@ class FCFS_Scheduler(Scheduler):
 
        
         self.display_results()
+        self.summary = self.get_summary()
 
 
 
@@ -241,6 +252,7 @@ class SJF_Scheduler(Scheduler):
             })
 
         self.display_results()
+        self.summary = self.get_summary()
 
 
          
@@ -306,6 +318,7 @@ class RR_Scheduler(Scheduler):
                 process.waiting_time = process.turnaround_time - process.burst_time
 
         self.display_results()
+        self.summary = self.get_summary()
 
 
     
