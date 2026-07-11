@@ -53,7 +53,7 @@ class Scheduler:
         for percent in range(0, 101, 20):
             progress_bar.progress(percent)
             time.sleep(animation_time / 10)
-        st.success(f"Process {process.process_number} has been completed in {process.burst_time} second(s).\n")
+        st.info(f"Process {process.process_number} has been completed in {process.burst_time} second(s).\n")
 
     def display_gantt_chart(self):
         fig = go.Figure()
