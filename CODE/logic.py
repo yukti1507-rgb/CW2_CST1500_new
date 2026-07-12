@@ -59,11 +59,11 @@ class Scheduler:
         fig = go.Figure()
 
         colors = [
-            "blue",
-            "orange",
-            "green",
-            "red",
-            "purple"
+            "light blue",
+            "violet",
+            "purple",
+            "pink",
+            "gray"
         ]
 
         for i, block in enumerate(self.timeline):

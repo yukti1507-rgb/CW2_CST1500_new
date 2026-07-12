@@ -2,6 +2,7 @@ import streamlit as st
 from history_database.history import get_specific_algorithm, get_specific_timestamp, delete_run
 from logic import Process, FCFS_Scheduler, SJF_Scheduler, RR_Scheduler
 
+st.set_page_config(page_title= "History", page_icon= "📜", layout= "wide")
 st.title("History of CPU Scheduling Algorithms")
 
 

@@ -2,6 +2,7 @@ import streamlit as st
 from logic import Process, FCFS_Scheduler
 from history_database.history import save_results_option, export_as_csv
 
+st.set_page_config(page_title= "First Come, First Served", page_icon= "🕰️", layout="wide")
 st.title("CPU Algorithm - First Come, First Served")
 
 if "processes" not in st.session_state:
@@ -10,20 +11,20 @@ if "processes" not in st.session_state:
 
 processes = st.session_state['processes']
 
-scheduler = FCFS_Scheduler()
 
-for p in processes:
-    process  = Process(p["Process Number"], p["Arrival Time"], p["Burst Time"])
-    scheduler.add_process(process)
+if st.button("Run FCFS"):
+    scheduler = FCFS_Scheduler()
 
-scheduler.run()
+    for p in processes:
+        process = Process(p["Process Number"], p["Arrival Time"], p["Burst Time"])
+        scheduler.add_process(process)
 
-algorithm_name = "FCFS"
+    scheduler.run()
 
-save_results_option(scheduler, algorithm_name)
+    algorithm_name = "FCFS"
+    save_results_option(scheduler, algorithm_name)
 
-download_csv = st.radio("Would you like to download the results as a csv file?", ["Yes", "No"])
-
-if download_csv == "Yes":
-    csv = export_as_csv(scheduler.results)
-    st.download_button(label="Download", data=csv, file_name="FCFS_results.csv", mime="text/csv")
+    download_csv = st.radio("Would you like to download the results as a csv file?", ["Yes", "No"])
+    if download_csv == "Yes":
+        csv = export_as_csv(scheduler.results)
+        st.download_button(label="Download", data=csv, file_name="FCFS_results.csv", mime="text/csv")
