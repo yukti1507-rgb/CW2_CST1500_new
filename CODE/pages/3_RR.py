@@ -35,13 +35,14 @@ results, summary = scheduler.run()
 
 summary_table = pd.DataFrame([summary])
 st.table(summary_table)
-    scheduler.run()
+
+scheduler.run()
 
 algorithm_name = "RR"
 
 save_results_option(results, summary, algorithm_name)
 
-    download_csv = st.radio("Would you like to download the results as a csv file?", ["Yes", "No"])
-    if download_csv == "Yes":
-        csv = export_as_csv(scheduler.results)
-        st.download_button(label="Download", data=csv, file_name="RR_results.csv", mime="text/csv")
+download_csv = st.radio("Would you like to download the results as a csv file?", ["Yes", "No"])
+if download_csv == "Yes":
+    csv = export_as_csv(scheduler.results)
+    st.download_button(label="Download", data=csv, file_name="RR_results.csv", mime="text/csv")
