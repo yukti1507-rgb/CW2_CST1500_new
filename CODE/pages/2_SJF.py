@@ -3,7 +3,11 @@ import pandas as pd
 from logic.scheduler_logic import Process
 from logic.SJF_logic import SJF_Scheduler
 from history_database.history import save_results_option, export_as_csv
+import streamlit as st
+from logic import Process, SJF_Scheduler
+from history_database.history import save_results_option, export_as_csv
 
+st.set_page_config(page_title= "Shortest Job First", page_icon= "⚡", layout="wide")
 st.title("CPU Algorithm - Shortest Job First")
 
 if "processes" not in st.session_state:
@@ -12,11 +16,12 @@ if "processes" not in st.session_state:
 
 processes = st.session_state['processes']
 
-scheduler = SJF_Scheduler()
 
-for p in processes:
-    process  = Process(p["Process Number"], p["Arrival Time"], p["Burst Time"])
-    scheduler.add_process(process)
+if st.button("Run SJF"):
+    scheduler = SJF_Scheduler()
+    for p in processes:
+        process = Process(p["Process Number"], p["Arrival Time"], p["Burst Time"])
+        scheduler.add_process(process)
 
 results, summary = scheduler.run()
 

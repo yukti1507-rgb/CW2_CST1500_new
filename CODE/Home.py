@@ -3,26 +3,26 @@ import pandas as pd
 from logic.scheduler_logic import RandomGenerator
 
 
-st.set_page_config(page_title="CPU Scheduling Algorithms", page_icon=":home", layout= "wide")
+st.set_page_config(page_title="CPU Scheduling Algorithms", page_icon= "🏡", layout= "wide")
 
 st.title("Welcome to CPU Scheduling Algorithms!")
 
 def choose_algorithm(processes):
     fcfs, sjf, rr = st.columns(3)
 
-    run_fcfs = fcfs.button("Run FCFS")
+    run_fcfs = fcfs.button("Go to FCFS Page")
     if run_fcfs:
-        st.session_state['processes'] = processes  # Store processes in session state
+        st.session_state['processes'] = processes
         st.switch_page("pages/1_FCFS.py")
     
-    run_sjf = sjf.button("Run SJF")
+    run_sjf = sjf.button("Go to SJF Page")
     if run_sjf:
-        st.session_state['processes'] = processes  # Store processes in session state
+        st.session_state['processes'] = processes
         st.switch_page("pages/2_SJF.py")
     
-    run_rr = rr.button("Run RR")
+    run_rr = rr.button("Go to RR Page")
     if run_rr:
-        st.session_state['processes'] = processes  # Store processes in session state
+        st.session_state['processes'] = processes
         st.switch_page("pages/3_RR.py")
 
 num_processes = st.slider("Number of processes", min_value=1, max_value=50,value=3)      
@@ -51,26 +51,23 @@ if input_method == "Input values manually":
 
 elif input_method == "Generate random values":
     if st.button("Generate"):
-        st.session_state["processes"] = RandomGenerator.generate_random_processes(num_processes)
-        df = pd.DataFrame(st.session_state["processes"])
+        processes = RandomGenerator.generate_random_processes(num_processes)
+        st.session_state['processes'] = processes   # <-- persist here
+        df = pd.DataFrame(processes)
         st.dataframe(df)
 
         
     if "processes" in st.session_state:
         choose_algorithm(st.session_state["processes"])
 
-
 #   MIGHT PUT IT SOMEWHERE ELSE
 elif input_method == "Import CSV file":
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     if uploaded_file is not None:
-        # Read the CSV file into a DataFrame
         df = pd.read_csv(uploaded_file)
         st.write("CSV file uploaded successfully!")
         st.dataframe(df)
 
         processes = df.to_dict(orient="records")
-        st.session_state["processes"] = processes
-        
-        choose_algorithm(processes)
-
+        st.session_state['processes'] = processes   # <-- persist here
+        choose_algorithm()

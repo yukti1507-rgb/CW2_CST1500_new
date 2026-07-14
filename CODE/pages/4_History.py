@@ -5,6 +5,7 @@ from logic.FCFS_logic import FCFS_Scheduler
 from logic.SJF_logic import SJF_Scheduler
 from logic.RR_logic import RR_Scheduler
 
+st.set_page_config(page_title= "History", page_icon= "📜", layout= "wide")
 st.title("History of CPU Scheduling Algorithms")
 
 
