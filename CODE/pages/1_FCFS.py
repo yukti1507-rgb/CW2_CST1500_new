@@ -1,5 +1,7 @@
 import streamlit as st
-from logic import Process, FCFS_Scheduler
+import pandas as pd
+from logic.scheduler_logic import Process
+from logic.FCFS_logic import FCFS_Scheduler
 from history_database.history import save_results_option, export_as_csv
 
 st.title("CPU Algorithm - First Come, First Served")
@@ -16,11 +18,14 @@ for p in processes:
     process  = Process(p["Process Number"], p["Arrival Time"], p["Burst Time"])
     scheduler.add_process(process)
 
-scheduler.run()
+results, summary = scheduler.run()
+
+summary_table = pd.DataFrame([summary])
+st.table(summary_table)
 
 algorithm_name = "FCFS"
 
-save_results_option(scheduler, algorithm_name)
+save_results_option(results, summary, algorithm_name)
 
 download_csv = st.radio("Would you like to download the results as a csv file?", ["Yes", "No"])
 

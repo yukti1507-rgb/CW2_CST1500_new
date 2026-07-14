@@ -1,6 +1,9 @@
 import streamlit as st
-from history_database.history import get_specific_algorithm, get_specific_timestamp, delete_run
-from logic import Process, FCFS_Scheduler, SJF_Scheduler, RR_Scheduler
+from history_database.db import get_specific_identifier, get_specific_algorithm, get_specific_timestamp, delete_run
+from logic.scheduler_logic import Process
+from logic.FCFS_logic import FCFS_Scheduler
+from logic.SJF_logic import SJF_Scheduler
+from logic.RR_logic import RR_Scheduler
 
 st.title("History of CPU Scheduling Algorithms")
 
@@ -10,9 +13,13 @@ identifier = st.text_input("Enter your Anonymous ID or Username to view your pas
 if identifier:
     algorithm_choice = st.selectbox(
         "Choose which algorithm history to view:",
-        ["FCFS", "SJF", "Round Robin", "All"])
+        ["FCFS", "SJF", "RR", "All"])
     
-    df = get_specific_algorithm(identifier, algorithm_choice)
+    if algorithm_choice == "All":
+        df = get_specific_identifier(identifier)
+    else:
+        df = get_specific_algorithm(identifier, algorithm_choice)
+
 
 
 

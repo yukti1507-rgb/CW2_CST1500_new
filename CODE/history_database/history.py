@@ -3,14 +3,29 @@ import streamlit as st
 import uuid
 from history_database.db import get_connection, create_history_table
 
-def save_history(processes, identifier, algorithm):
+def save_history(processes, summary, identifier, algorithm):
         conn = get_connection()
         create_history_table(conn)
         cur = conn.cursor()
         sql = 'INSERT INTO history (identifier, process_number, arrival_time, burst_time, waiting_time, turnaround_time, algorithm) VALUES (?, ?, ?, ?, ?, ?, ?)'
         for process in processes:    
             param = (identifier, process.process_number, process.arrival_time, process.burst_time, process.waiting_time, process.turnaround_time, algorithm)
-            cur.execute(sql, param) 
+            cur.execute(sql, param)
+
+        avg_wait = summary["Average Waiting Time"]
+        avg_turn = summary["Average Turnaround Time"]
+
+        avg_row = (
+            identifier,
+            "Average",
+            -1,
+            -1,
+            avg_wait,
+            avg_turn,
+            algorithm
+        )
+
+        cur.execute(sql, avg_row)
         conn.commit()
         conn.close()
     
@@ -33,12 +48,11 @@ def initialise_save_session():
         if key not in st.session_state:
             st.session_state[key] = value
 
-def save_results_option(scheduler, algorithm):
+def save_results_option(processes, summary, algorithm):
      
     initialise_save_session()
 
     save_choice = st.radio("Would you like to save these results?", ["Yes", "No"])
-
 
     if save_choice == "Yes":
 
@@ -57,12 +71,11 @@ def save_results_option(scheduler, algorithm):
                 st.success(f"Your anonymous ID has been generated.")
                 st.text_input("Copy this ID if you want to access these results later on the History page:", value=st.session_state["user_id"])
 
-            
         elif save_option == "My Name":
-            st.info("Your history will be saved with your chosen username. You can retrieve previous sessions on the History page using the username whenever youi run the application again.")
+            st.info("Your history will be saved with your chosen username. You can retrieve previous sessions on the History page using the username whenever you run the application again.")
             username = st.text_input("Enter your name")
 
-            if st.button ("Confirm username"):
+            if st.button("Confirm username"):
                 if username:
                     st.session_state["username"] = username
                     st.session_state["user_id"] = None
@@ -72,54 +85,10 @@ def save_results_option(scheduler, algorithm):
                     st.success("History will be saved using your username")
         
         if st.session_state["save_history"]:
-            if save_option == "Anonymous ID":
-                identifier = st.session_state["user_id"]
-            else:
-                identifier = st.session_state["username"]
+            identifier = st.session_state["user_id"] if save_option == "Anonymous ID" else st.session_state["username"]
         
-            save_history(scheduler.processes, identifier, algorithm)
+            save_history(processes, summary, identifier, algorithm)
 
     else:
         st.session_state["save_history"] = False
         st.info("The results will only be displayed during the current run.")
-
-
-def get_specific_identifier(identifier):
-    conn = get_connection()
-    df = pd.read_sql_query(
-        "SELECT * FROM history WHERE identifier = ? ORDER BY timestamp DESC",
-        conn,
-        params=(identifier,)
-    )
-    conn.close()
-    return df
-
-def get_specific_algorithm(identifier, algorithm):
-    conn = get_connection()
-    df = pd.read_sql_query(
-        "SELECT * FROM history WHERE identifier = ? AND algorithm = ? ORDER BY timestamp DESC",
-        conn,
-        params=(identifier, algorithm)
-    )
-    conn.close()
-    return df
-
-def get_specific_timestamp(identifier, timestamp):
-    conn = get_connection()
-    df = pd.read_sql_query(
-        "SELECT * FROM history WHERE identifier = ? AND timestamp = ?",
-        conn,
-        params=(identifier, timestamp)
-    )
-    conn.close()
-    return df
-
-def delete_run(identifier, timestamp):
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute(
-        "DELETE FROM history WHERE identifier = ? AND timestamp = ?",
-        (identifier, timestamp)
-    )
-    conn.commit()
-    conn.close()

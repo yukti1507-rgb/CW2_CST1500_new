@@ -1,10 +1,10 @@
 import time
 import random
+import threading
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-#Defining the thread class 
 class Process():
     def __init__(self, process_number, arrival_time, burst_time):
         super().__init__()
@@ -26,6 +26,7 @@ class Scheduler:
         self.timeline =[] 
         self.table_placeholder = st.empty()
         self.silent = False
+        self.cpu_lock = threading.Lock()
     
     
     def add_process(self, process):
@@ -155,173 +156,18 @@ class Scheduler:
             df = pd.DataFrame(self.results)
             self.table_placeholder.dataframe(df)
         self.display_gantt_chart()
-    
-    
-class FCFS_Scheduler(Scheduler):
-    def __init__(self):
+
+class ProcessThread(threading.Thread):
+    def __init__(self, process, run_time, cpu_lock):
         super().__init__()
-    
-    def run(self):
-        self.processes.sort(key=lambda x: x.arrival_time)
-
-        if not self.processes:
-            return
-
-        current_time = 0
-        
-        for process in self.processes:
-            if current_time < process.arrival_time:
-                self.timeline.append({
-                    "Process": "Idle",
-                    "Start": current_time,
-                    "Finish": process.arrival_time
-                })
-                current_time = process.arrival_time
-
-            process.start_time = current_time
-            process.waiting_time = process.start_time - process.arrival_time
-            process.turnaround_time = (process.waiting_time + process.burst_time)
-            current_time += process.burst_time
-            process.finish_time = current_time
-
-
-            self.timeline.append({
-            "Process": process.process_number,
-            "Start": process.start_time,
-            "Finish": process.finish_time
-            })
-        
-
-       
-        self.display_results()
-        self.summary = self.get_summary()
-
-
-
-class SJF_Scheduler(Scheduler):
-    def __init__(self):
-        super().__init__()
-   
-    def run(self):
-        ready_queue = self.processes.copy()
-        self.current_time = 0
-
-        while ready_queue:
-            # Find all processes that have arrived
-            available = [p for p in ready_queue if p.arrival_time <= self.current_time]
-
-            # If none have arrived yet, jump to next arrival
-            if not available:
-                next_arrival = min(p.arrival_time for p in ready_queue)
-
-                # CPU idle until next arrival
-                self.timeline.append({
-                    "Process": "Idle",
-                    "Start": self.current_time,
-                    "Finish": next_arrival
-                })
-
-                self.current_time = next_arrival
-                available = [p for p in ready_queue if p.arrival_time <= self.current_time]
-
-            # Pick shortest burst among available
-            available.sort(key=lambda p: p.burst_time)
-            process = available[0]
-            ready_queue.remove(process)
-
-            # Start time
-            process.start_time = self.current_time
-
-            # Waiting time
-            process.waiting_time = process.start_time - process.arrival_time
-
-            # Run the process
-            self.current_time += process.burst_time
-
-            # Finish time
-            process.finish_time = self.current_time
-
-            # Turnaround time
-            process.turnaround_time = process.finish_time - process.arrival_time
-
-            # Add to timeline
-            self.timeline.append({
-                "Process": process.process_number,
-                "Start": process.start_time,
-                "Finish": process.finish_time
-            })
-
-        self.display_results()
-        self.summary = self.get_summary()
-
-
-         
-
-# ROUND ROBIN
-
-class RR_Scheduler(Scheduler):
-    def __init__(self, time_quantum):
-        super().__init__()
-        self.time_quantum = time_quantum
+        self.process = process
+        self.run_time = run_time
+        self.cpu_lock = cpu_lock
 
     def run(self):
-        processes = sorted(self.processes, key=lambda p: p.arrival_time)
-        ready_queue = []
-        self.current_time = 0
-
-        while processes or ready_queue:
-
-            # Add newly arrived processes
-            while processes and processes[0].arrival_time <= self.current_time:
-                ready_queue.append(processes.pop(0))
-
-            # CPU idle if no process is ready
-            if not ready_queue:
-                next_arrival = processes[0].arrival_time
-
-                # Add idle block
-                self.timeline.append({
-                    "Process": "Idle",
-                    "Start": self.current_time,
-                    "Finish": next_arrival
-                })
-
-                self.current_time = next_arrival
-                continue
-
-            # Pop next process from queue
-            process = ready_queue.pop(0)
-            start_time = self.current_time
-
-            # Run for quantum or remaining burst
-            run_time = min(self.time_quantum, process.remaining_time)
-            process.remaining_time -= run_time
-            self.current_time += run_time
-
-            # Add execution block
-            self.timeline.append({
-                "Process": process.process_number,
-                "Start": start_time,
-                "Finish": self.current_time
-            })
-
-            # Add newly arrived processes during execution
-            while processes and processes[0].arrival_time <= self.current_time:
-                ready_queue.append(processes.pop(0))
-
-            # Requeue if not finished
-            if process.remaining_time > 0:
-                ready_queue.append(process)
-            else:
-                process.finish_time = self.current_time
-                process.turnaround_time = process.finish_time - process.arrival_time
-                process.waiting_time = process.turnaround_time - process.burst_time
-
-        self.display_results()
-        self.summary = self.get_summary()
-
-
-    
+        with self.cpu_lock:
+            time.sleep(self.run_time)
+ 
 class RandomGenerator:
     def generate_random_processes(num_processes, max_arrival=20, max_burst=20):
         processes = []

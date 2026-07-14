@@ -1,13 +1,13 @@
 import streamlit as st
 import pandas as pd
-from logic import RandomGenerator
+from logic.scheduler_logic import RandomGenerator
 
 
 st.set_page_config(page_title="CPU Scheduling Algorithms", page_icon=":home", layout= "wide")
 
 st.title("Welcome to CPU Scheduling Algorithms!")
 
-def choose_algorithm():
+def choose_algorithm(processes):
     fcfs, sjf, rr = st.columns(3)
 
     run_fcfs = fcfs.button("Run FCFS")
@@ -26,9 +26,9 @@ def choose_algorithm():
         st.switch_page("pages/3_RR.py")
 
 num_processes = st.slider("Number of processes", min_value=1, max_value=50,value=3)      
-input = st.selectbox("Select input method:",["Input values manually", "Generate random values", "Import CSV file"])
+input_method = st.selectbox("Select input method:",["Input values manually", "Generate random values", "Import CSV file"])
 
-if input == "Input values manually":
+if input_method == "Input values manually":
     processes =[]
 
     col1, col2 = st.columns(2)
@@ -47,23 +47,30 @@ if input == "Input values manually":
             "Arrival Time" : arrival_time,
             "Burst Time" : burst_time})
     
-    choose_algorithm()
+    choose_algorithm(processes)
 
-if input == "Generate random values":
+elif input_method == "Generate random values":
     if st.button("Generate"):
-        processes = RandomGenerator.generate_random_processes(num_processes)
-        df = pd.DataFrame(processes)
+        st.session_state["processes"] = RandomGenerator.generate_random_processes(num_processes)
+        df = pd.DataFrame(st.session_state["processes"])
         st.dataframe(df)
+
         
-        choose_algorithm()
+    if "processes" in st.session_state:
+        choose_algorithm(st.session_state["processes"])
 
 
 #   MIGHT PUT IT SOMEWHERE ELSE
-if input == "Import CSV file":
+elif input_method == "Import CSV file":
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     if uploaded_file is not None:
         # Read the CSV file into a DataFrame
         df = pd.read_csv(uploaded_file)
         st.write("CSV file uploaded successfully!")
         st.dataframe(df)
+
+        processes = df.to_dict(orient="records")
+        st.session_state["processes"] = processes
+        
+        choose_algorithm(processes)
 
