@@ -23,17 +23,21 @@ if st.button("Run SJF"):
         process = Process(p["Process Number"], p["Arrival Time"], p["Burst Time"])
         scheduler.add_process(process)
 
-results, summary = scheduler.run()
+    results, summary = scheduler.run()
 
-summary_table = pd.DataFrame([summary])
-st.table(summary_table)
+    st.session_state["sjf_results"] = results
+    st.session_state["sjf_summary"] = summary
+    st.session_state["sjf_csv"] = scheduler.results
 
-algorithm_name = "SJF"
+if "sjf_results" in st.session_state:
+    summary_table = pd.DataFrame([st.session_state["sjf_summary"]])
+    st.table(summary_table)
 
-save_results_option(results, summary, algorithm_name)
+    algorithm_name = "SJF"
 
-download_csv = st.radio("Would you like to download the results as a csv file?", ["Yes", "No"])
+    save_results_option(st.session_state["sjf_results"], st.session_state["sjf_summary"], algorithm_name)
 
-if download_csv == "Yes":
-    csv = export_as_csv(scheduler.results)
-    st.download_button(label="Download", data=csv, file_name="SJF_results.csv", mime="text/csv")
+    download_csv = st.radio("Would you like to download the results as a csv file?", ["Yes", "No"])
+    if download_csv == "Yes":
+        csv = export_as_csv(st.session_state["sjf_csv"])
+        st.download_button(label="Download", data=csv, file_name="SJF_results.csv", mime="text/csv")

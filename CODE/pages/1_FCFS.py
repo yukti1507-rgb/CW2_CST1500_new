@@ -21,16 +21,21 @@ if st.button("Run FCFS"):
         process = Process(p["Process Number"], p["Arrival Time"], p["Burst Time"])
         scheduler.add_process(process)
 
-results, summary = scheduler.run()
+    results, summary = scheduler.run()
 
-summary_table = pd.DataFrame([summary])
-st.table(summary_table)
+    st.session_state["fcfs_results"] = results
+    st.session_state["fcfs_summary"] = summary
+    st.session_state["fcfs_csv"] = scheduler.results
 
-algorithm_name = "FCFS"
+if "fcfs_results" in st.session_state:
+    summary_table = pd.DataFrame([st.session_state["fcfs_summary"]])
+    st.table(summary_table)
 
-save_results_option(results, summary, algorithm_name)
+    algorithm_name = "FCFS"
 
-download_csv = st.radio("Would you like to download the results as a csv file?", ["Yes", "No"])
-if download_csv == "Yes":
-    csv = export_as_csv(scheduler.results)
-    st.download_button(label="Download", data=csv, file_name="FCFS_results.csv", mime="text/csv")
+    save_results_option(st.session_state["fcfs_results"], st.session_state["fcfs_summary"], algorithm_name)
+
+    download_csv = st.radio("Would you like to download the results as a csv file?", ["Yes", "No"])
+    if download_csv == "Yes":
+        csv = export_as_csv(st.session_state["fcfs_csv"])
+        st.download_button(label="Download", data=csv, file_name="FCFS_results.csv", mime="text/csv")
