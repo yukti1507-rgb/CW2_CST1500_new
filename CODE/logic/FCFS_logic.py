@@ -1,4 +1,4 @@
-from logic.scheduler_logic import Scheduler, ProcessThread
+from logic.scheduler_logic import Scheduler
 
 class FCFS_Scheduler(Scheduler):
     def __init__(self):
@@ -23,17 +23,12 @@ class FCFS_Scheduler(Scheduler):
             
 
             process.start_time = self.current_time
-            run_time = process.burst_time
 
-            thread = ProcessThread(process, run_time, self.cpu_lock)
-            thread.start()
-            thread.join()
-
-            self.current_time += run_time
+            self.current_time += process.burst_time
             process.finish_time = self.current_time
            
             process.waiting_time = process.start_time - process.arrival_time
-            process.turnaround_time = (process.finish_time + process.arrival_time)
+            process.turnaround_time = (process.finish_time - process.arrival_time)
 
 
             self.timeline.append({
@@ -41,8 +36,6 @@ class FCFS_Scheduler(Scheduler):
             "Start": process.start_time,
             "Finish": process.finish_time
             })
-        
-
        
         self.display_results()
-        return self.processes, self.get_summary()
+        return self.processes

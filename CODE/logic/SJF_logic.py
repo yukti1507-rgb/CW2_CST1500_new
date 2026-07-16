@@ -1,4 +1,4 @@
-from logic.scheduler_logic import Scheduler, ProcessThread
+from logic.scheduler_logic import Scheduler
 
 class SJF_Scheduler(Scheduler):
     def __init__(self):
@@ -31,14 +31,10 @@ class SJF_Scheduler(Scheduler):
             process = available[0]
             ready_queue.remove(process)
 
+            self.execution_order.append(process)
+
             # Start time
             process.start_time = self.current_time
-            run_time = process.burst_time
-
-            # Threading
-            thread = ProcessThread(process, run_time, self.cpu_lock)
-            thread.start()
-            thread.join()
 
             # Run the process
             self.current_time += process.burst_time
@@ -61,4 +57,4 @@ class SJF_Scheduler(Scheduler):
             })
 
         self.display_results()
-        return self.processes, self.get_summary()
+        return self.processes

@@ -31,14 +31,14 @@ if st.button("Run RR"):
         process = Process(p["Process Number"], p["Arrival Time"], p["Burst Time"])
         scheduler.add_process(process)
 
-    results, summary = scheduler.run()
+    results = scheduler.run()
+    summary = scheduler.get_summary_table()
 
     st.session_state["rr_results"] = results
     st.session_state["rr_summary"] = summary
-    st.session_state["rr_csv"] = scheduler.results
 
 if "rr_results" in st.session_state:
-    summary_table = pd.DataFrame([st.session_state["rr_summary"]])
+    summary_table = pd.DataFrame(st.session_state["rr_summary"])
     st.table(summary_table)
 
     algorithm_name = "RR"
@@ -47,5 +47,5 @@ if "rr_results" in st.session_state:
 
     download_csv = st.radio("Would you like to download the results as a csv file?", ["Yes", "No"])
     if download_csv == "Yes":
-        csv = export_as_csv(st.session_state["rr_csv"])
+        csv = export_as_csv(st.session_state["rr_summary"])
         st.download_button(label="Download", data=csv, file_name="RR_results.csv", mime="text/csv")
