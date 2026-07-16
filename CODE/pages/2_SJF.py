@@ -23,14 +23,15 @@ if st.button("Run SJF"):
         process = Process(p["Process Number"], p["Arrival Time"], p["Burst Time"])
         scheduler.add_process(process)
 
-    results, summary = scheduler.run()
+    results = scheduler.run()
+    summary = scheduler.get_summary_table()
 
     st.session_state["sjf_results"] = results
     st.session_state["sjf_summary"] = summary
     st.session_state["sjf_csv"] = scheduler.results
 
 if "sjf_results" in st.session_state:
-    summary_table = pd.DataFrame([st.session_state["sjf_summary"]])
+    summary_table = pd.DataFrame(st.session_state["sjf_summary"])
     st.table(summary_table)
 
     algorithm_name = "SJF"

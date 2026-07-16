@@ -33,16 +33,20 @@ class RR_Scheduler(Scheduler):
             # Pop next process from queue
             process = ready_queue.pop(0)
 
+            self.execution_order.append(process)
+
             # Run for quantum or remaining burst
             run_time = min(self.time_quantum, process.remaining_time)
+
+            self.execution_time.append(run_time)
+
+            start_time = self.current_time
 
             #Add threading
             thread = ProcessThread(process, run_time, self.cpu_lock)
             thread.start()
             thread.join()
 
-            start_time = self.current_time
-            process.remaining_time -= run_time
             self.current_time += run_time
 
             # Add execution block
@@ -64,5 +68,5 @@ class RR_Scheduler(Scheduler):
                 process.turnaround_time = process.finish_time - process.arrival_time
                 process.waiting_time = process.turnaround_time - process.burst_time
 
-        self.display_results()
-        return self.processes, self.get_summary()
+        self.display_results(rr=True, run_time=self.execution_time)
+        return self.processes

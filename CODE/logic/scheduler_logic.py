@@ -24,6 +24,8 @@ class Scheduler:
         self.current_time = 0
         self.results = []
         self.timeline =[] 
+        self.execution_order = []
+        self.execution_time = []
         self.table_placeholder = st.empty()
         self.silent = False
         self.cpu_lock = threading.Lock()
@@ -40,27 +42,34 @@ class Scheduler:
         total_turnaround_time = sum(process.turnaround_time for process in self.processes)
         return total_turnaround_time / len(self.processes) if self.processes else 0
     
-    def get_summary(self):
-        return {
-            "Average Waiting Time": self.calculate_average_waiting_time(),
-            "Average Turnaround Time": self.calculate_average_turnaround_time()
-        }
-
-    def progress_of_process(self, process):
+    def progress_of_process(self, process,run_time=None):
         progress_bar = st.progress(0)
         status_text = st.empty()
         status_text.text(f"Running process {process.process_number}...")
-        animation_time = (process.burst_time * 0.2)
+
+        if run_time is None:
+            animation_time = process.burst_time * 0.2
+            completed_time = process.burst_time
+
+        else:
+            animation_time = run_time * 0.2
+            completed_time = run_time
+
         for percent in range(0, 101, 20):
             progress_bar.progress(percent)
             time.sleep(animation_time / 10)
-        st.info(f"Process {process.process_number} has been completed in {process.burst_time} second(s).\n")
+
+        if run_time is None:
+            st.info(f"Process {process.process_number} has been completed in {process.burst_time} second(s).\n")
+
+        else:
+            st.info(f"Process {process.process_number} has been executed for {completed_time} second(s).\n")
 
     def display_gantt_chart(self):
         fig = go.Figure()
 
         colors = [
-            "light blue",
+            "lightblue",
             "violet",
             "purple",
             "pink",
@@ -138,12 +147,16 @@ class Scheduler:
         )
 
 
-    def display_results(self):
+    def display_results(self, rr=False, run_time=None):
         if self.silent:
             return
         
-        for process in self.processes:
-            self.progress_of_process(process)
+        for index, process in enumerate(self.execution_order):
+
+            if rr:
+                self.progress_of_process(process, run_time[index])
+            else:
+                self.progress_of_process(process)
             
             self.results.append({
             "Process Number": process.process_number,
@@ -157,6 +170,30 @@ class Scheduler:
             self.table_placeholder.dataframe(df)
         self.display_gantt_chart()
 
+    def get_summary_table(self):
+        summary =[]
+        for process in self.processes:            
+            summary.append({
+            "Process Number": process.process_number,
+            "Arrival Time": process.arrival_time,
+            "Burst Time": process.burst_time,
+            "Waiting Time": process.waiting_time,
+            "Turnaround Time": process.turnaround_time
+            })
+
+        summary.append({
+        "Process Number": "Average",
+        "Arrival Time": "-",
+        "Burst Time": "-",
+        "Waiting Time": round(self.calculate_average_waiting_time(), 2),
+        "Turnaround Time": round(self.calculate_average_turnaround_time(), 2)
+        })
+
+        return summary
+
+
+        
+
 class ProcessThread(threading.Thread):
     def __init__(self, process, run_time, cpu_lock):
         super().__init__()
@@ -166,7 +203,9 @@ class ProcessThread(threading.Thread):
 
     def run(self):
         with self.cpu_lock:
-            time.sleep(self.run_time)
+            for i in range(self.run_time):
+                time.sleep(1)
+                self.process.remaining_time -= 1
  
 class RandomGenerator:
     def generate_random_processes(num_processes, max_arrival=20, max_burst=20):

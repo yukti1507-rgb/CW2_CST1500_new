@@ -21,14 +21,15 @@ if st.button("Run FCFS"):
         process = Process(p["Process Number"], p["Arrival Time"], p["Burst Time"])
         scheduler.add_process(process)
 
-    results, summary = scheduler.run()
+    results = scheduler.run()
+    summary = scheduler.get_summary_table()
 
     st.session_state["fcfs_results"] = results
     st.session_state["fcfs_summary"] = summary
     st.session_state["fcfs_csv"] = scheduler.results
 
 if "fcfs_results" in st.session_state:
-    summary_table = pd.DataFrame([st.session_state["fcfs_summary"]])
+    summary_table = pd.DataFrame(st.session_state["fcfs_summary"])
     st.table(summary_table)
 
     algorithm_name = "FCFS"
