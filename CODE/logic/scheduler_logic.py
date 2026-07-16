@@ -26,6 +26,7 @@ class Scheduler:
         self.timeline =[] 
         self.execution_order = []
         self.execution_time = []
+        self.execution_completed = []
         self.table_placeholder = st.empty()
         self.silent = False
         self.cpu_lock = threading.Lock()
@@ -42,7 +43,7 @@ class Scheduler:
         total_turnaround_time = sum(process.turnaround_time for process in self.processes)
         return total_turnaround_time / len(self.processes) if self.processes else 0
     
-    def progress_of_process(self, process,run_time=None):
+    def progress_of_process(self, process,run_time=None, completed=False):
         progress_bar = st.progress(0)
         status_text = st.empty()
         status_text.text(f"Running process {process.process_number}...")
@@ -60,10 +61,13 @@ class Scheduler:
             time.sleep(animation_time / 10)
 
         if run_time is None:
-            st.info(f"Process {process.process_number} has been completed in {process.burst_time} second(s).\n")
+            st.success(f"Process {process.process_number} has been completed in {process.burst_time} second(s).\n")
 
         else:
-            st.info(f"Process {process.process_number} has been executed for {completed_time} second(s).\n")
+            if completed:
+                st.success(f"Process {process.process_number} has been completed in {process.burst_time} second(s).\n")
+            else:
+                st.info(f"Process {process.process_number} has been executed for {completed_time} second(s).\n")
 
     def display_gantt_chart(self):
         fig = go.Figure()
@@ -147,14 +151,14 @@ class Scheduler:
         )
 
 
-    def display_results(self, rr=False, run_time=None):
+    def display_results(self, rr=False, run_time=None, completed_status=None):
         if self.silent:
             return
         
         for index, process in enumerate(self.execution_order):
 
             if rr:
-                self.progress_of_process(process, run_time[index])
+                self.progress_of_process(process, run_time[index], completed_status[index])
             else:
                 self.progress_of_process(process)
             

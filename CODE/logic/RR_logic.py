@@ -47,6 +47,8 @@ class RR_Scheduler(Scheduler):
             thread.start()
             thread.join()
 
+            self.execution_completed.append(process.remaining_time ==0)
+
             self.current_time += run_time
 
             # Add execution block
@@ -68,5 +70,5 @@ class RR_Scheduler(Scheduler):
                 process.turnaround_time = process.finish_time - process.arrival_time
                 process.waiting_time = process.turnaround_time - process.burst_time
 
-        self.display_results(rr=True, run_time=self.execution_time)
+        self.display_results(rr=True, run_time=self.execution_time, completed_status=self.execution_completed)
         return self.processes
