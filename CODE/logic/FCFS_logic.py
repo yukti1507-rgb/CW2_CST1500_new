@@ -28,8 +28,8 @@ class FCFS_Scheduler(Scheduler):
             self.current_time += process.burst_time
             process.finish_time = self.current_time
            
-            process.waiting_time = round(process.start_time - process.arrival_time, 2)
-            process.turnaround_time = round(process.finish_time - process.arrival_time, 2)
+            process.waiting_time = process.start_time - process.arrival_time
+            process.turnaround_time = process.finish_time - process.arrival_time
 
             self.timeline.append({
             "Process": process.process_number,

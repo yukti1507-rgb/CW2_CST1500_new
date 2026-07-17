@@ -184,16 +184,16 @@ class Scheduler:
             "Process Number": process.process_number,
             "Arrival Time": process.arrival_time,
             "Burst Time": process.burst_time,
-            "Waiting Time": process.waiting_time,
-            "Turnaround Time": process.turnaround_time
+            "Waiting Time": f"{process.waiting_time:.2f}",
+            "Turnaround Time": f"{process.turnaround_time:.2f}"
             })
 
         summary.append({
         "Process Number": "Average",
         "Arrival Time": "-",
         "Burst Time": "-",
-        "Waiting Time": round(self.calculate_average_waiting_time(), 2),
-        "Turnaround Time": round(self.calculate_average_turnaround_time(), 2)
+        "Waiting Time": f"{self.calculate_average_waiting_time():.2f}",
+        "Turnaround Time": f"{self.calculate_average_turnaround_time():.2f}"
         })
 
         return summary
