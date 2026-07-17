@@ -7,6 +7,9 @@ st.set_page_config(page_title="CPU Scheduling Algorithms", page_icon= "🏡", la
 st.title("Welcome to CPU Scheduling Algorithms!")
 
 def choose_algorithm(processes):
+    """
+    Stores processes entered and switches page to selected algorithm page
+    """
     fcfs, sjf, rr = st.columns(3)
 
     run_fcfs = fcfs.button("Go to FCFS Page")
@@ -24,7 +27,11 @@ def choose_algorithm(processes):
         st.session_state['processes'] = processes
         st.switch_page("pages/3_RR.py")
 
+#Allow the user to choose number of processes
+#Value is automatically set to 3 if not change is done
 num_processes = st.slider("Number of processes", min_value=1, max_value=50,value=3)      
+
+#Allow user to choose how to determine arrival times and burst times
 input_method = st.selectbox("Select input method:",["Input values manually", "Generate random values", "Import CSV file"])
 
 if input_method == "Input values manually":
@@ -33,7 +40,8 @@ if input_method == "Input values manually":
     col1, col2 = st.columns(2)
     col1.subheader("Arrival Time")
     col2.subheader("Burst Time")
-#Prompting user to input burst times for each process
+
+#Prompting user to input arrival times and burst times for each process
     for i in range(int(num_processes)):
         col1.badge(f"Enter arrival time for process {i+1}",color="violet")
         arrival_time= col1.number_input(f"", min_value=0, step=1, key=f"arrival_{i}")
@@ -49,9 +57,11 @@ if input_method == "Input values manually":
     choose_algorithm(processes)
 
 elif input_method == "Generate random values":
+    #Generate random values for arrival times and burst times
     if st.button("Generate"):
         processes = RandomGenerator.generate_random_processes(num_processes)
-        st.session_state['processes'] = processes   # <-- persist here
+        #Store generated values so that they are carried forward across reruns
+        st.session_state['processes'] = processes
         df = pd.DataFrame(processes)
         st.dataframe(df)
 
@@ -59,8 +69,8 @@ elif input_method == "Generate random values":
     if "processes" in st.session_state:
         choose_algorithm(st.session_state["processes"])
 
-#   MIGHT PUT IT SOMEWHERE ELSE
 elif input_method == "Import CSV file":
+    #Allow user to upload a CSV file containing process numbers, arrival times and burst times
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
@@ -68,5 +78,5 @@ elif input_method == "Import CSV file":
         st.dataframe(df)
 
         processes = df.to_dict(orient="records")
-        st.session_state['processes'] = processes   # <-- persist here
+        st.session_state['processes'] = processes  
         choose_algorithm(st.session_state["processes"])
