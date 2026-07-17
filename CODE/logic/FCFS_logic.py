@@ -21,6 +21,7 @@ class FCFS_Scheduler(Scheduler):
                 })
                 self.current_time = process.arrival_time
             
+            self.execution_order.append(process)
 
             process.start_time = self.current_time
 
@@ -29,7 +30,6 @@ class FCFS_Scheduler(Scheduler):
            
             process.waiting_time = round(process.start_time - process.arrival_time, 2)
             process.turnaround_time = round(process.finish_time - process.arrival_time, 2)
-
 
             self.timeline.append({
             "Process": process.process_number,

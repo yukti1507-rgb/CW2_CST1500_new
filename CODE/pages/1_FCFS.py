@@ -7,16 +7,20 @@ from history_database.history import save_results_option, export_as_csv
 st.set_page_config(page_title= "First Come, First Served", page_icon= "🕰️", layout="wide")
 st.title("CPU Algorithm - First Come, First Served")
 
-st.image("FCFS banner.jpeg", width=1200)  
-
 if "processes" not in st.session_state:
     st.warning("No processes found. Please go back to the main page and input the processes.")
     st.stop()
 
 processes = st.session_state['processes']
 
+skip_animation = st.checkbox("Skip execution animation")
 
 if st.button("Run FCFS"):
+    st.session_state["skip_animation"] = skip_animation
+
+    if "skip_animation" not in st.session_state:
+        st.session_state["skip_animation"] = False
+        
     scheduler = FCFS_Scheduler()
 
     for p in processes:
@@ -28,7 +32,6 @@ if st.button("Run FCFS"):
 
     st.session_state["fcfs_results"] = results
     st.session_state["fcfs_summary"] = summary
-    st.session_state["fcfs_csv"] = scheduler.results
 
 if "fcfs_results" in st.session_state:
     summary_table = pd.DataFrame(st.session_state["fcfs_summary"])
@@ -40,5 +43,5 @@ if "fcfs_results" in st.session_state:
 
     download_csv = st.radio("Would you like to download the results as a csv file?", ["Yes", "No"])
     if download_csv == "Yes":
-        csv = export_as_csv(st.session_state["fcfs_csv"])
+        csv = export_as_csv(st.session_state["fcfs_summary"])
         st.download_button(label="Download", data=csv, file_name="FCFS_results.csv", mime="text/csv")

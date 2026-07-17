@@ -5,7 +5,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-class Process():
+class Process:
     def __init__(self, process_number, arrival_time, burst_time):
         super().__init__()
         self.process_number = process_number
@@ -13,7 +13,6 @@ class Process():
         self.burst_time = burst_time
         self.waiting_time = 0
         self.turnaround_time = 0
-        self.completion_time = 0
         self.remaining_time = burst_time
         self.start_time = 0
         self.finish_time = 0
@@ -26,6 +25,7 @@ class Scheduler:
         self.timeline =[] 
         self.execution_order = []
         self.execution_time = []
+        self.execution_completed = []
         self.table_placeholder = st.empty()
         self.silent = False
         self.cpu_lock = threading.Lock()
@@ -41,8 +41,13 @@ class Scheduler:
     def calculate_average_turnaround_time(self):
         total_turnaround_time = sum(process.turnaround_time for process in self.processes)
         return total_turnaround_time / len(self.processes) if self.processes else 0
-    
-    def progress_of_process(self, process,run_time=None):
+
+
+    def progress_of_process(self, process,run_time=None, completed=False):
+
+        if st.session_state.skip_animation:
+            return
+        
         progress_bar = st.progress(0)
         status_text = st.empty()
         status_text.text(f"Running process {process.process_number}...")
@@ -60,10 +65,13 @@ class Scheduler:
             time.sleep(animation_time / 10)
 
         if run_time is None:
-            st.info(f"Process {process.process_number} has been completed in {process.burst_time} second(s).\n")
+            st.success(f"Process {process.process_number} has been completed in {process.burst_time} second(s).\n")
 
         else:
-            st.info(f"Process {process.process_number} has been executed for {completed_time} second(s).\n")
+            if completed:
+                st.success(f"Process {process.process_number} has been completed in {process.burst_time} second(s).\n")
+            else:
+                st.info(f"Process {process.process_number} has been executed for {completed_time} second(s).\n")
 
     def display_gantt_chart(self):
         fig = go.Figure()
@@ -146,15 +154,14 @@ class Scheduler:
             use_container_width=True
         )
 
-
-    def display_results(self, rr=False, run_time=None):
+    def display_results(self, rr=False, run_time=None, completed_status=None):
         if self.silent:
             return
         
         for index, process in enumerate(self.execution_order):
 
             if rr:
-                self.progress_of_process(process, run_time[index])
+                self.progress_of_process(process, run_time[index], completed_status[index])
             else:
                 self.progress_of_process(process)
             
@@ -190,7 +197,6 @@ class Scheduler:
         })
 
         return summary
-
 
         
 
