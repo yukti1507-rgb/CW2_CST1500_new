@@ -12,10 +12,11 @@ def save_history(processes, summary, identifier, algorithm):
             param = (identifier, process.process_number, process.arrival_time, process.burst_time, process.waiting_time, process.turnaround_time, algorithm)
             cur.execute(sql, param)
 
-        avg_wait = summary["Average Waiting Time"]
-        avg_turn = summary["Average Turnaround Time"]
+        avg_row = summary[-1]
+        avg_wait = avg_row["Waiting Time"]
+        avg_turn = avg_row["Turnaround Time"]
 
-        avg_row = (
+        avg_entry = (
             identifier,
             "Average",
             -1,
@@ -25,7 +26,7 @@ def save_history(processes, summary, identifier, algorithm):
             algorithm
         )
 
-        cur.execute(sql, avg_row)
+        cur.execute(sql, avg_entry)
         conn.commit()
         conn.close()
     

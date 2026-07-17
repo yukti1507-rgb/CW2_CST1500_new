@@ -7,14 +7,13 @@ from history_database.history import save_results_option, export_as_csv
 st.set_page_config(page_title= "Shortest Job First", page_icon= "⚡", layout="wide")
 st.title("CPU Algorithm - Shortest Job First")
 
+st.image("SJF banner2.jpeg", width=1200)
 if "processes" not in st.session_state:
     st.warning("No processes found. Please go back to the main page and input the processes.")
     st.stop()
 
 processes = st.session_state['processes']
 
-if st.button("Skip animation"):
-    st.session_state["skip_animation"] = True
 
 skip_animation = st.checkbox("Skip execution animation")
 

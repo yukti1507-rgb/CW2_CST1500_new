@@ -7,6 +7,9 @@ from history_database.history import save_results_option, export_as_csv
 st.set_page_config(page_title= "Round Robin", page_icon= "🔄", layout="wide")
 st.title("CPU Algorithm - Round Robin")
 
+
+st.image("RR banner.jpeg", width=1200)
+
 if "processes" not in st.session_state:
     st.warning("No processes found. Please go back to the main page and input the processes.")
     st.stop()
