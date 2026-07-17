@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from logic.scheduler_logic import RandomGenerator
 
-
 st.set_page_config(page_title="CPU Scheduling Algorithms", page_icon= "🏡", layout= "wide")
 
 st.title("Welcome to CPU Scheduling Algorithms!")
@@ -70,4 +69,4 @@ elif input_method == "Import CSV file":
 
         processes = df.to_dict(orient="records")
         st.session_state['processes'] = processes   # <-- persist here
-        choose_algorithm()
+        choose_algorithm(st.session_state["processes"])

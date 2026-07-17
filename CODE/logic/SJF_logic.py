@@ -45,7 +45,6 @@ class SJF_Scheduler(Scheduler):
             # Waiting time
             process.waiting_time = process.start_time - process.arrival_time
 
-
             # Turnaround time
             process.turnaround_time = process.finish_time - process.arrival_time
 

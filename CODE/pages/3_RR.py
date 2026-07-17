@@ -4,11 +4,8 @@ from logic.scheduler_logic import Process
 from logic.RR_logic import RR_Scheduler
 from history_database.history import save_results_option, export_as_csv
 
-
 st.set_page_config(page_title= "Round Robin", page_icon= "🔄", layout="wide")
 st.title("CPU Algorithm - Round Robin")
-
-st.image("RR banner.jpeg", width=1200) 
 
 if "processes" not in st.session_state:
     st.warning("No processes found. Please go back to the main page and input the processes.")
@@ -25,8 +22,14 @@ time_quantum = st.number_input(
     value=2
 )
 
+skip_animation = st.checkbox("Skip execution animation")
 
 if st.button("Run RR"):
+    st.session_state["skip_animation"] = skip_animation
+
+    if "skip_animation" not in st.session_state:
+        st.session_state["skip_animation"] = False
+        
     scheduler = RR_Scheduler(time_quantum=time_quantum)
 
     for p in processes:

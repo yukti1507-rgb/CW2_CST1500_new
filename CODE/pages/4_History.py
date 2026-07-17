@@ -8,40 +8,25 @@ from logic.RR_logic import RR_Scheduler
 st.set_page_config(page_title= "History", page_icon= "📜", layout= "wide")
 st.title("History of CPU Scheduling Algorithms")
 
-
 identifier = st.text_input("Enter your Anonymous ID or Username to view your past runs:")
 
 if identifier:
     algorithm_choice = st.selectbox(
         "Choose which algorithm history to view:",
-        ["FCFS", "SJF", "RR", "All"])
-    
-    if algorithm_choice == "All":
-        df = get_specific_identifier(identifier)
-    else:
-        df = get_specific_algorithm(identifier, algorithm_choice)
-
-
-
+        ["FCFS", "SJF", "RR"])
+     
+    df = get_specific_algorithm(identifier, algorithm_choice)
 
     if df.empty:
         st.warning("No history found for this ID or username.")
     else:
         st.success(f"Showing history for: {identifier}")
        
+        st.subheader("Results table for Past Runs")
         show_table = st.checkbox("Show results table")
         if show_table:
             st.dataframe(df)
         
-        # Compare past runs chart
-        st.subheader("Compare My Past Runs")
-        compare_df = df.groupby("timestamp").agg({
-            "waiting_time": "mean",
-            "turnaround_time": "mean"
-        }).reset_index()
-
-        st.line_chart(compare_df.set_index("timestamp"))
-
         st.subheader("Gantt Charts for Past Runs")
     
         grouped = df.groupby("timestamp")
@@ -51,6 +36,8 @@ if identifier:
             show_chart = st.checkbox(f"Show Gantt Chart for run at {timestamp}")
 
             if show_chart:
+                group = group[group["arrival_time"] >= 0]
+
                 processes = []
                 for _, row in group.iterrows():
                     processes.append(Process(
@@ -64,7 +51,8 @@ if identifier:
                 elif algorithm_choice == "SJF":
                     scheduler = SJF_Scheduler()
                 else:
-                    scheduler = RR_Scheduler(time_quantum=4)
+                    st.info("The history is reconstructed using the default Round Robin time quantum 2.")
+                    scheduler = RR_Scheduler(time_quantum=2)
 
                 for p in processes:
                     scheduler.add_process(p)
@@ -86,5 +74,5 @@ if identifier:
 
             # Delete run
             if st.button(f"Delete run at {timestamp}"):
-                delete_run(identifier, timestamp)
-                st.warning("Run deleted. Refresh the page to update.")
+                delete_run(identifier, timestamp)            
+                st.rerun()
